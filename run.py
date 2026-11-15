@@ -8,7 +8,8 @@ import argparse
 from pathlib import Path
 
 from analysis import analyse
-from angles import compute_joint_angles
+from gait import detect_gait_events
+from angles import compute_joint_angles, sagittal_frame
 from pose import PoseData, extract_pose
 from report import to_json, to_markdown
 from synthetic import make_walking
@@ -32,10 +33,12 @@ def run(video=None, landmarks=None, demo=False, out="outputs", variant="full",
     else:
         raise SystemExit("Provide --video, --landmarks or --demo")
 
-    angles = compute_joint_angles(pose.world, pose.visibility, pose.fps)
-    result = analyse(angles, pose.fps, pose.visibility, pose.world)
+    frame = sagittal_frame(pose.world, pose.visibility)
+    angles = compute_joint_angles(pose.world, pose.visibility, pose.fps, forward=frame["forward"])
+    events = detect_gait_events(pose.world, pose.visibility, pose.fps, frame["forward"])
+    result = analyse(angles, pose.fps, pose.visibility, pose.world, events=events, frame=frame)
 
-    plot_angles(angles, pose.fps, result, out / "joint_angles.png")
+    plot_angles(angles, pose.fps, result, out / "joint_angles.png", events=events)
     plot_skeleton_frames(pose.world, out / "skeleton_frames.png")
     to_json(result, out / "report.json")
     figs = ["joint_angles.png", "skeleton_frames.png"]

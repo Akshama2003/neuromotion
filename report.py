@@ -31,6 +31,8 @@ def to_markdown(result: dict, source: str = "", figures: list[str] | None = None
     ]
     lines += [f"- {o}" for o in result["observations"]]
     lines += ["", "## Joint range of motion (degrees, 5th-95th percentile)", "",
+              "Hip, knee and ankle angles are signed sagittal-plane angles (hip: + flexion / - extension; "
+              "ankle: + dorsiflexion / - plantarflexion).", "",
               "| Joint | Left min | Left max | Left ROM | Right min | Right max | Right ROM |",
               "|---|---|---|---|---|---|---|"]
     for name in ("knee_flexion", "hip_flexion", "ankle_dorsiflexion", "elbow_flexion"):
@@ -40,11 +42,19 @@ def to_markdown(result: dict, source: str = "", figures: list[str] | None = None
     t = j["trunk_inclination"]
     lines += ["", f"Trunk inclination from vertical: mean {_fmt(t['mean'])} deg, max {_fmt(t['max'])} deg.", "",
               "## Gait", "",
-              f"- Steps: left {g['steps_left']}, right {g['steps_right']}",
-              f"- Cadence: {g['cadence_steps_per_min']:.0f} steps/min",
+              f"- Event source: {g.get('event_source', 'n/a').replace('_', ' ')}",
+              f"- Steps (heel strikes): left {g['steps_left']}, right {g['steps_right']}",
+              f"- Cadence: {_fmt(g['cadence_steps_per_min'], 0)} steps/min",
               f"- Stride-time variability (CV): left {_fmt(g['stride_time_cv_pct']['left'])}%, "
-              f"right {_fmt(g['stride_time_cv_pct']['right'])}%", "",
-              "## Left/right asymmetry (symmetry index, %)", ""]
+              f"right {_fmt(g['stride_time_cv_pct']['right'])}%"]
+    if "stance_pct" in g:
+        for label, key, nd, unit in (("Stride time", "stride_time_s", 2, " s"),
+                                     ("Step time", "step_time_s", 2, " s"),
+                                     ("Step length (approx., monocular scale)", "step_length_m", 2, " m"),
+                                     ("Stance phase", "stance_pct", 0, "%"),
+                                     ("Swing phase", "swing_pct", 0, "%")):
+            lines.append(f"- {label}: left {_fmt(g[key]['left'], nd)}{unit}, right {_fmt(g[key]['right'], nd)}{unit}")
+    lines += ["", "## Left/right asymmetry (symmetry index, %)", ""]
     for k, v in result["symmetry_index_pct"].items():
         lines.append(f"- {k.replace('_', ' ')}: {_fmt(v)}%")
     q = result.get("quality", {})

@@ -12,27 +12,45 @@ from pose import LM, SKELETON_EDGES
 L_COLOR, R_COLOR = "#1f77b4", "#d62728"
 
 
-def plot_angles(angles: dict, fps: float, analysis: dict | None, path) -> None:
+def plot_angles(angles: dict, fps: float, analysis: dict | None, path, events: dict | None = None) -> None:
     t = np.arange(len(next(iter(angles.values())))) / fps
-    panels = [("knee_flexion", "Knee flexion (deg)"), ("hip_flexion", "Hip flexion (deg)"),
-              ("ankle_dorsiflexion", "Ankle dorsiflexion (deg)"), ("elbow_flexion", "Elbow flexion (deg)")]
-    fig, axes = plt.subplots(len(panels) + 1, 1, figsize=(10, 12), sharex=True)
+    panels = [("knee_flexion", "Knee flexion (+) (deg)"), ("hip_flexion", "Hip flexion (+) / ext (-) (deg)"),
+              ("ankle_dorsiflexion", "Ankle dorsi (+) / plantar (-) (deg)"),
+              ("elbow_flexion", "Elbow flexion (deg)")]
+    n = len(panels) + 1 + (1 if events else 0)
+    fig, axes = plt.subplots(n, 1, figsize=(10, 2.6 * n), sharex=True)
     for ax, (key, title) in zip(axes, panels):
         ax.plot(t, angles[f"{key}_left"], color=L_COLOR, label="Left")
         ax.plot(t, angles[f"{key}_right"], color=R_COLOR, label="Right")
-        if key == "knee_flexion" and analysis:
-            for side, c in (("left", L_COLOR), ("right", R_COLOR)):
-                fr = np.array(analysis["gait"][f"step_frames_{side}"], dtype=int)
-                if fr.size:
-                    ax.plot(t[fr], angles[f"knee_flexion_{side}"][fr], "v", color=c, ms=7)
-        ax.set_ylabel(title)
+        if key == "hip_flexion":
+            ax.axhline(0, color="gray", lw=0.8)
+        ax.set_ylabel(title, fontsize=8)
         ax.grid(alpha=0.3)
         ax.legend(loc="upper right", ncol=2)
-    axes[-1].plot(t, angles["trunk_inclination"], color="#2ca02c")
-    axes[-1].set_ylabel("Trunk inclination (deg)")
-    axes[-1].set_xlabel("Time (s)")
-    axes[-1].grid(alpha=0.3)
-    fig.suptitle("NeuroMotion - joint angles over time (triangles = detected steps)")
+    k = len(panels)
+    if events:
+        ax = axes[k]
+        sig = events["signals"]
+        for side, c in (("left", L_COLOR), ("right", R_COLOR)):
+            ax.plot(t, sig[f"heel_{side}"], color=c, lw=1.2, label=f"{side} heel")
+            ax.plot(t, sig[f"toe_{side}"], color=c, lw=1.2, ls="--", label=f"{side} toe")
+            hs = np.asarray(events["heel_strikes"][side], dtype=int)
+            to = np.asarray(events["toe_offs"][side], dtype=int)
+            if hs.size:
+                ax.plot(t[hs], sig[f"heel_{side}"][hs], "v", color=c, ms=7)
+            if to.size:
+                ax.plot(t[to], sig[f"toe_{side}"][to], "^", color=c, ms=7, mfc="none")
+        ax.set_ylabel("Foot fwd of pelvis (m)", fontsize=8)
+        ax.grid(alpha=0.3)
+        ax.legend(loc="upper right", ncol=4, fontsize=7)
+        k += 1
+    axes[k].plot(t, angles["trunk_inclination"], color="#2ca02c", label="from vertical")
+    axes[k].plot(t, angles["trunk_lean"], color="#9467bd", label="signed lean (+ forward)")
+    axes[k].set_ylabel("Trunk (deg)", fontsize=8)
+    axes[k].set_xlabel("Time (s)")
+    axes[k].grid(alpha=0.3)
+    axes[k].legend(loc="upper right", ncol=2, fontsize=8)
+    fig.suptitle("NeuroMotion - joint angles and gait events (filled v = heel strike, hollow ^ = toe-off)")
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
