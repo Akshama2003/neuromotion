@@ -102,7 +102,7 @@ def analyse(angles: dict[str, np.ndarray], fps: float, visibility: np.ndarray | 
 
     # ---- movement-type heuristic
     knee_rom = max((joints["knee_flexion_left"]["rom"] or 0), (joints["knee_flexion_right"]["rom"] or 0))
-    if n_steps >= 4 and 50 <= cadence <= 200:
+    if n_steps >= 4 and 20 <= cadence <= 200:   # slow gait (rehab) is still walking
         movement = "walking"
     elif knee_rom > 60:
         movement = "squat / sit-stand like"
@@ -158,6 +158,9 @@ def analyse(angles: dict[str, np.ndarray], fps: float, visibility: np.ndarray | 
                     nd = 0 if unit == "%" else 2
                     obs.append(f"{label} differs {v:.0f}% between sides "
                                f"(L {l:.{nd}f}{unit}, R {r:.{nd}f}{unit}).")
+    if any(("differs" in o and "between sides" in o) for o in obs):
+        obs.append("Note: left/right differences measured from a single side-on camera can be artifacts "
+                   "(the far-side leg is partly hidden). Confirm with a second view or a front/back recording.")
     lean = joints["trunk_inclination"]["mean"]
     if lean is not None and lean > th["trunk_lean_deg"]:
         obs.append(f"Mean trunk inclination {lean:.0f} deg from vertical.")

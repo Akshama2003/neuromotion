@@ -138,3 +138,22 @@ def test_static_and_empty_inputs_do_not_crash(tmp_path):
     nan.save(p2)
     run(landmarks=p2, out=tmp_path / "b")                           # must not raise
     assert (tmp_path / "b" / "report.md").exists()
+
+
+def test_slow_walking_is_still_walking(tmp_path):
+    """Slow gait (44 steps/min, 2.7 s stride) as in rehab / slow-motion clips."""
+    pose = make_walking(duration=18, stride_hz=0.37)
+    p = tmp_path / "slow.npz"
+    pose.save(p)
+    _, _, res = run(landmarks=p, out=tmp_path)
+    g = res["gait"]
+    assert res["movement_type_heuristic"] == "walking"
+    assert abs(g["cadence_steps_per_min"] - 44) < 5
+    assert abs(g["stride_time_s"]["left"] - 1 / 0.37) < 0.2
+    assert g["stance_pct"]["left"] is not None
+    assert any("outside the typical" in o for o in res["observations"])   # slow cadence is flagged
+
+
+def test_asymmetry_comes_with_camera_caveat(tmp_path):
+    _, _, res = run(demo=True, asymmetric_demo=True, out=tmp_path)
+    assert any("single side-on camera" in o for o in res["observations"])

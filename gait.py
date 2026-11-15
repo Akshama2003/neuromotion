@@ -78,7 +78,7 @@ def gait_metrics(ev: dict, fps: float) -> dict:
     step_l = {"left": [], "right": []}
     for (i, a), (j, b) in zip(seq[:-1], seq[1:]):
         dt = (j - i) / fps
-        if a != b and 0.2 <= dt <= 1.5:
+        if a != b and 0.2 <= dt <= 2.5:
             step_t[b].append(dt)
             d = sig[f"heel_{b}"][j] - sig[f"heel_{a}"][j]
             if np.isfinite(d):
@@ -87,11 +87,11 @@ def gait_metrics(ev: dict, fps: float) -> dict:
     stride, stance = {}, {}
     for _, s in SIDES:
         d = np.diff(hs[s]) / fps
-        stride[s] = d[(d >= 0.6) & (d <= 2.5)]
+        stride[s] = d[(d >= 0.6) & (d <= 5.0)]
         st = []
         for i, j in zip(hs[s][:-1], hs[s][1:]):
             T = (j - i) / fps
-            if 0.6 <= T <= 2.5:
+            if 0.6 <= T <= 5.0:
                 t_off = to[s][(to[s] > i) & (to[s] < j)]
                 if len(t_off):
                     st.append(100.0 * (t_off[0] - i) / (j - i))

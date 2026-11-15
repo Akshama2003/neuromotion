@@ -40,6 +40,7 @@ The first real run downloads the MediaPipe pose model (~10 MB) to `~/.cache/neur
 - Monocular video: 3D world landmarks are estimates. Use a clear full-body side-on view, steady camera, good light.
 - Hip, knee and ankle angles are signed sagittal-plane angles in a forward axis estimated from the feet (works for either walking direction). Needs an upright camera and a roughly side-on view; the report flags when foot and pelvis orientation disagree by more than 45 deg.
 - Heel-strike / toe-off use the coordinate method (Zeni 2008) on monocular landmarks. The synthetic tests check logic, signs and invariance (mirroring, camera yaw, dropouts) but NOT timing accuracy on real gait; step length is approximate (monocular scale).
+- Left/right asymmetry from ONE side-on camera is unreliable: the far-side leg is partly hidden. A (presumably symmetric) mannequin walk clip produced a 38% knee-ROM and 61% step-length asymmetry. Treat asymmetry flags as prompts to re-record from a second angle, not as findings.
 - Thresholds are prototype heuristics, not clinical norms. Output is measurement and observation, never a diagnosis.
 - Not yet validated against real video or motion-capture ground truth.
 
