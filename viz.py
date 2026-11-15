@@ -7,7 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .pose import LM, SKELETON_EDGES
+from pose import LM, SKELETON_EDGES
 
 L_COLOR, R_COLOR = "#1f77b4", "#d62728"
 

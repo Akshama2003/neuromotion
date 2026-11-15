@@ -4,7 +4,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from neuromotion.report import DISCLAIMER
+from report import DISCLAIMER
 from run import run
 
 st.set_page_config(page_title="NeuroMotion v1", layout="wide")

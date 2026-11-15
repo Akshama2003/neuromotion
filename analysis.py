@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.signal import find_peaks
 
-from .pose import LM
+from pose import LM
 
 THRESHOLDS = {
     "asymmetry_pct": 15.0,        # side-to-side difference considered notable

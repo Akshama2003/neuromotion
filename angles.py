@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.signal import butter, filtfilt
 
-from .pose import LM
+from pose import LM
 
 
 def angle_3pt(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:

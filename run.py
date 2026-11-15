@@ -7,12 +7,12 @@
 import argparse
 from pathlib import Path
 
-from neuromotion.analysis import analyse
-from neuromotion.angles import compute_joint_angles
-from neuromotion.pose import PoseData, extract_pose
-from neuromotion.report import to_json, to_markdown
-from neuromotion.synthetic import make_walking
-from neuromotion.viz import annotate_video, plot_angles, plot_skeleton_frames
+from analysis import analyse
+from angles import compute_joint_angles
+from pose import PoseData, extract_pose
+from report import to_json, to_markdown
+from synthetic import make_walking
+from viz import annotate_video, plot_angles, plot_skeleton_frames
 
 
 def run(video=None, landmarks=None, demo=False, out="outputs", variant="full",

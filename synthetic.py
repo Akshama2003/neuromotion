@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .pose import LM, PoseData
+from pose import LM, PoseData
 
 
 def make_walking(duration=10.0, fps=30.0, stride_hz=0.9, right_knee_scale=1.0,
